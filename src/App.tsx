@@ -5,9 +5,12 @@ import { robotCentricDrive } from "./utils/mecanumDrive";
 import { updateMecanum } from "./utils/drivetrain";
 import mecanumKinematics from "./physics/mecanum";
 import { wallCollision } from "./physics/coliders";
+import { drawGamePiece } from "./render/drawGamePiece";
+import type { GamePiece } from "./types";
 
 function App() {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
+
   const keys = useRef(new Set<string>());
 
   const [dimensions, setDimensions] = useState({
@@ -16,6 +19,25 @@ function App() {
     centerX: window.innerWidth / 2,
     centerY: window.innerHeight / 2,
   });
+
+  const pollen: GamePiece = {
+    id: "pollen-1",
+    kind: "gamePiece",
+    pieceType: "ball",
+    transform: {
+      position: { x: dimensions.centerX, y: dimensions.centerY},
+      rotation: 0
+    },
+    ownerId: null,
+    parentId: null,
+    radius: 1.4,
+    color: "#FFE400",
+    collider: {
+      type: "circle",
+      radius: 1.4
+    }
+  }
+
 
   const [pos, setPos] = useState({
     x: window.innerWidth / 2,
@@ -44,6 +66,7 @@ function App() {
 
     drawField(canvas, ctx, dimensions.centerX, dimensions.centerY);
     drawRobot(ctx, pos.x, pos.y, pos.heading);
+    drawGamePiece(ctx, dimensions.centerX, dimensions.centerY, pollen)
   }, [pos, dimensions]);
 
   useEffect(() => {

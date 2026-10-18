@@ -10,7 +10,7 @@ function drawField(
   const FIELD_PIXELS = FIELD_SIZE * SCALE;
   const TILE_SIZE = FIELD_PIXELS / 6;
   // mat
-  ctx.fillStyle = "#23262b";
+  ctx.fillStyle = "#25282e";
   ctx.fillRect(
     (canvas.width - FIELD_PIXELS) / 2,
     (canvas.height - FIELD_PIXELS) / 2,
@@ -19,7 +19,7 @@ function drawField(
   );
 
   // tile
-  ctx.strokeStyle = "#2c3038";
+  ctx.strokeStyle = "#2e323b";
   ctx.lineWidth = 1;
 
   for (let i = 1; i <= 6; i++) {
