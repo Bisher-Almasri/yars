@@ -1,169 +1,61 @@
-import { useEffect, useRef, useState, type KeyboardEvent } from "react";
-import drawField from "./render/drawField";
-import drawRobot from "./render/drawRobot";
-import { robotCentricDrive } from "./utils/mecanumDrive";
-import { updateMecanum } from "./utils/drivetrain";
-import mecanumKinematics from "./physics/mecanum";
-import { wallCollision } from "./physics/coliders";
-import { drawGamePiece } from "./render/drawGamePiece";
-import type { GamePiece } from "./types";
+import { useEffect, useRef } from "react";
+import { Game } from "./engine/Game";
 
 function App() {
-  const canvasRef = useRef<HTMLCanvasElement | null>(null);
-
-  const keys = useRef(new Set<string>());
-
-  const [dimensions, setDimensions] = useState({
-    width: window.innerWidth,
-    height: window.innerHeight,
-    centerX: window.innerWidth / 2,
-    centerY: window.innerHeight / 2,
-  });
-
-  const pollen: GamePiece = {
-    id: "pollen-1",
-    kind: "gamePiece",
-    pieceType: "ball",
-    transform: {
-      position: { x: dimensions.centerX, y: dimensions.centerY},
-      rotation: 0
-    },
-    ownerId: null,
-    parentId: null,
-    radius: 1.4,
-    color: "#FFE400",
-    collider: {
-      type: "circle",
-      radius: 1.4
-    }
-  }
-
-
-  const [pos, setPos] = useState({
-    x: window.innerWidth / 2,
-    y: window.innerHeight / 2,
-    heading: 0,
-  });
+  const canvasRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
     const canvas = canvasRef.current;
-    if (!canvas) {
-      console.log("no canvas");
-      return;
-    }
+    const ctx = canvas?.getContext("2d");
 
-    const ctx = canvas.getContext("2d");
-    if (!ctx) {
-      console.log("no ctx");
-      return;
-    }
+    if (!canvas || !ctx) return;
 
-    canvas.width = dimensions.width;
-    canvas.height = dimensions.height;
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
 
-    ctx.fillStyle = "#000";
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    const game = new Game(ctx, canvas);
+    game.start();
 
-    drawField(canvas, ctx, dimensions.centerX, dimensions.centerY);
-    drawRobot(ctx, pos.x, pos.y, pos.heading);
-    drawGamePiece(ctx, dimensions.centerX, dimensions.centerY, pollen)
-  }, [pos, dimensions]);
+    const handleKeyDown = (event: KeyboardEvent) => {
+      game.keyDown(event.key);
+    };
 
-  useEffect(() => {
-    function handleResize() {
-      setDimensions({
-        width: window.innerWidth,
-        height: window.innerHeight,
-        centerX: window.innerWidth / 2,
-        centerY: window.innerHeight / 2,
-      });
-    }
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
-  });
+    const handleKeyUp = (event: KeyboardEvent) => {
+      game.keyUp(event.key);
+    };
 
-  useEffect(() => {
-    let animationId = 0;
-    let lastTime = 0;
+    const handleBlur = () => {
+      for (const key of [
+        "w", "a", "s", "d", "q", "e",
+        "arrowup", "arrowdown",
+        "arrowleft", "arrowright",
+      ]) {
+        game.keyUp(key);
+      }
+    };
 
-    function loop(timestap: number) {
-      const dt =
-        lastTime == 0 ? 0 : Math.min((timestap - lastTime) / 1000, 0.05);
-      lastTime = timestap;
+    window.addEventListener("keydown", handleKeyDown);
+    window.addEventListener("keyup", handleKeyUp);
+    window.addEventListener("blur", handleBlur);
 
-      const pressed = keys.current;
-
-      const forward =
-        Number(pressed.has("w") || pressed.has("arrowup")) -
-        Number(pressed.has("s") || pressed.has("arrowdown"));
-
-      const strafe =
-        Number(pressed.has("d") || pressed.has("arrowright")) -
-        Number(pressed.has("a") || pressed.has("arrowleft"));
-
-      const turn = Number(pressed.has("e")) - Number(pressed.has("q"));
-
-      const wheelPower = robotCentricDrive(forward, strafe, turn);
-      const velocity = mecanumKinematics(wheelPower, 350, 5);
-
-      setPos((prev) => {
-        const rawMovement = updateMecanum(prev, velocity, dt);
-
-        const correctedPosition = wallCollision(
-          rawMovement.x,
-          rawMovement.y,
-          rawMovement.heading,
-          dimensions.centerX,
-          dimensions.centerY,
-        );
-
-        return {
-          x: correctedPosition.x,
-          y: correctedPosition.y,
-          heading: rawMovement.heading,
-        };
-      });
-
-      animationId = requestAnimationFrame(loop);
-    }
-
-    animationId = requestAnimationFrame(loop);
-
-    return () => cancelAnimationFrame(animationId);
-  }, [dimensions]);
-
-  function handleKeyDown(event: KeyboardEvent<HTMLCanvasElement>) {
-    if (
-      ["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(event.key)
-    ) {
-      event.preventDefault();
-    }
-
-    keys.current.add(event.key.toLowerCase());
-  }
-
-  function handleKeyUp(event: KeyboardEvent<HTMLCanvasElement>) {
-    keys.current.delete(event.key.toLowerCase());
-  }
+    return () => {
+      game.stop();
+      window.removeEventListener("keydown", handleKeyDown);
+      window.removeEventListener("keyup", handleKeyUp);
+      window.removeEventListener("blur", handleBlur);
+    };
+  }, []);
 
   return (
-    <div
+    <canvas
+      ref={canvasRef}
+      id="field"
       style={{
-        display: "flex",
-        justifyContent: "center",
-        alignItems: "center",
+        display: "block",
+        width: "100vw",
         height: "100vh",
       }}
-    >
-      <canvas
-        ref={canvasRef}
-        tabIndex={0}
-        onKeyDown={handleKeyDown}
-        onKeyUp={handleKeyUp}
-        onBlur={() => keys.current.clear()}
-        id="field"
-      />
-    </div>
+    />
   );
 }
 
