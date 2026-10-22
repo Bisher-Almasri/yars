@@ -25,3 +25,9 @@ export type Collider =
       width: number;
       height: number;
     };
+
+
+export type GamePiece = {
+    radius: number,
+    color: string
+}

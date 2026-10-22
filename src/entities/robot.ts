@@ -1,10 +1,10 @@
+import type { World } from "@dimforge/rapier2d-compat";
 import { GameObject } from "../engine/GameObject";
-import { wallCollision } from "../physics/coliders";
 import mecanumKinematics from "../physics/mecanum";
 import drawRobot from "../render/drawRobot";
 import type { WheelPowers } from "../types";
-import { updateMecanum } from "../utils/drivetrain";
 import { robotCentricDrive } from "../utils/mecanumDrive";
+import RAPIER from "@dimforge/rapier2d-compat";
 
 export class Robot extends GameObject {
   wheelPowers: WheelPowers = {
@@ -14,35 +14,46 @@ export class Robot extends GameObject {
     rightBack: 0,
   };
 
+  private robotSize = 18 * 6;
+
   drive(forward: number, strafe: number, rotate: number) {
     this.wheelPowers = robotCentricDrive(forward, strafe, rotate);
   }
 
-  update(_dt: number, centerX: number = 0, centerY: number = 0): void {
-    const velocity = mecanumKinematics(this.wheelPowers, 350, 5);
-    const rawMovement = updateMecanum(
-      {
-        x: this.transform.x,
-        y: this.transform.y,
-        heading: this.transform.rotation,
-      },
-      velocity,
-      _dt,
-    );
+  update(dt: number): void {
+    if (!this.body) return
+    
+    super.update(dt)
 
-    const correctedPosition = wallCollision(
-      rawMovement.x,
-      rawMovement.y,
-      rawMovement.heading,
-      centerX,
-      centerY,
-    );
+    const {forward, strafe, rotate} = mecanumKinematics(this.wheelPowers, 400, 7);
 
-    this.transform.x = correctedPosition.x;
-    this.transform.y = correctedPosition.y;
-    this.transform.rotation = rawMovement.heading;
+    const heading = this.body.rotation()
+
+    this.body.setLinvel({
+      x: forward * Math.sin(heading) + strafe * Math.cos(heading),
+      y: -forward * Math.cos(heading) + strafe * Math.sin(heading)
+    },
+    true
+  )
+
+  this.body.setAngvel(rotate, true)
+  
   }
   render(ctx: CanvasRenderingContext2D): void {
     drawRobot(ctx, this.transform);
   }
+
+  initPhysics(physicsWorld: World): void {
+    let rigidBodyDesc = RAPIER.RigidBodyDesc.dynamic()
+      .setTranslation(this.transform.x, this.transform.y)
+      .setLinearDamping(2.0)
+      .setAngularDamping(1.0)
+
+    this.body = physicsWorld.createRigidBody(rigidBodyDesc);
+
+    let colliderDesc = RAPIER.ColliderDesc.cuboid(this.robotSize/2, this.robotSize/2)
+
+    physicsWorld.createCollider(colliderDesc, this.body)
+  }
+
 }

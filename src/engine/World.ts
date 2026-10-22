@@ -1,10 +1,18 @@
+import RAPIER from "@dimforge/rapier2d-compat";
 import type { GameObject } from "./GameObject";
 
 export class World {
   private objects = new Map<string, GameObject>();
+  public physicsWorld: RAPIER.World;
+
+  constructor() {
+    const gravity = new RAPIER.Vector2(0, 0)
+    this.physicsWorld = new RAPIER.World(gravity)
+  }
 
   add<T extends GameObject>(gameObject: T): T {
     this.objects.set(gameObject.id, gameObject);
+    gameObject.initPhysics(this.physicsWorld);
     return gameObject;
   }
 
@@ -16,6 +24,9 @@ export class World {
   }
 
   update(dt: number) {
+    this.physicsWorld.timestep = dt;
+    this.physicsWorld.step()
+    
     this.objects.forEach((gameObject) => {
       if (gameObject.active) gameObject.update(dt);
     });

@@ -1,8 +1,8 @@
+import type { Transform } from "../engine/Transform";
+
 function drawField(
-  canvas: HTMLCanvasElement,
   ctx: CanvasRenderingContext2D,
-  centerX: number,
-  centerY: number,
+  center: Transform,
 ) {
   // field size is 144x144 inches (6x6 tiles)
   const FIELD_SIZE = 144;
@@ -12,8 +12,8 @@ function drawField(
   // mat
   ctx.fillStyle = "#25282e";
   ctx.fillRect(
-    (canvas.width - FIELD_PIXELS) / 2,
-    (canvas.height - FIELD_PIXELS) / 2,
+    center.x - FIELD_PIXELS / 2,
+    center.y - FIELD_PIXELS / 2,
     FIELD_PIXELS,
     FIELD_PIXELS,
   );
@@ -25,10 +25,10 @@ function drawField(
   for (let i = 1; i <= 6; i++) {
     const offset = -FIELD_PIXELS / 2 + i * TILE_SIZE;
     ctx.beginPath();
-    ctx.moveTo(centerX + offset, centerY - FIELD_PIXELS / 2);
-    ctx.lineTo(centerX + offset, centerY + FIELD_PIXELS / 2);
-    ctx.moveTo(centerX - FIELD_PIXELS / 2, centerY + offset);
-    ctx.lineTo(centerX + FIELD_PIXELS / 2, centerY + offset);
+    ctx.moveTo(center.x + offset, center.y - FIELD_PIXELS / 2);
+    ctx.lineTo(center.x + offset, center.y + FIELD_PIXELS / 2);
+    ctx.moveTo(center.x - FIELD_PIXELS / 2, center.y + offset);
+    ctx.lineTo(center.x + FIELD_PIXELS / 2, center.y + offset);
     ctx.stroke();
   }
 
@@ -37,8 +37,8 @@ function drawField(
   ctx.lineWidth = 4;
 
   ctx.strokeRect(
-    centerX - FIELD_PIXELS / 2,
-    centerY - FIELD_PIXELS / 2,
+    center.x - FIELD_PIXELS / 2,
+    center.y - FIELD_PIXELS / 2,
     FIELD_PIXELS,
     FIELD_PIXELS,
   );

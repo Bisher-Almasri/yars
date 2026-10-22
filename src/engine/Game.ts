@@ -1,5 +1,6 @@
+import { Field } from "../entities/field";
+import { gamePiece } from "../entities/gamepiece";
 import { Robot } from "../entities/robot";
-import drawField from "../render/drawField";
 import { Transform } from "./Transform";
 import { World } from "./World";
 
@@ -12,11 +13,25 @@ export class Game {
   private lastTime = 0;
   private keys = new Set<string>();
 
+  private centerX: number;
+  private centerY: number;
+
   constructor(ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement) {
     this.canvas = canvas;
     this.ctx = ctx;
+    this.centerX = canvas.width / 2;
+    this.centerY = canvas.height / 2;
+
     this.world.add(
-      new Robot(new Transform(canvas.width / 2, canvas.height / 2, 0)),
+      new Field(new Transform(this.centerX, this.centerY, 0))
+    )
+
+    this.world.add(
+      new gamePiece(new Transform(this.centerX+250, this.centerY+250, 0))
+    )
+
+    this.world.add(
+      new Robot(new Transform(this.centerX, this.centerY, 0)),
     );
   }
 
@@ -56,17 +71,19 @@ export class Game {
     const robot = [...this.world.getAll()].find(
       (object): object is Robot => object instanceof Robot,
     );
-    
+
+    if (dt > 0) {
+        this.world.update(dt)
+    }
+
     if (robot) {
         robot.drive(forward, strafe, turn);
-        robot.update(dt, this.canvas.width / 2, this.canvas.height / 2);
     }
 
     this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height)
     
     this.ctx.fillStyle = "#000"
     this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height)
-    drawField(this.canvas, this.ctx, this.canvas.width / 2, this.canvas.height / 2)
     this.world.render(this.ctx)
 
     this.animationId = requestAnimationFrame(this.loop);

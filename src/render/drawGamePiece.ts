@@ -8,6 +8,6 @@ export function drawGamePiece(
 ) {
   ctx.beginPath();
   ctx.fillStyle = gamePiece.color;
-  ctx.arc(x, y, gamePiece.radius * 6, 0, Math.PI * 2);
+  ctx.arc(x, y, gamePiece.radius, 0, Math.PI * 2);
   ctx.fill();
 }

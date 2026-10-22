@@ -64,3 +64,110 @@ export function wallCollision(
 
   return { x: correctedX, y: correctedY };
 }
+
+export function robotBallCollision(
+  robotX: number,
+  robotY: number,
+  robotHeading: number,
+  ballX: number,
+  ballY: number,
+  ballRadius: number,
+): {collided: boolean, x: number, y: number} {
+  const SCALE = 6;
+  const ROBOT_SIZE = 18 * SCALE;
+  const halfRobot = ROBOT_SIZE / 2;
+
+  const Dx = ballX - robotX;
+  const Dy = ballY - robotY;
+
+  const cos = Math.cos(-robotHeading);
+  const sin = Math.sin(-robotHeading);
+
+  const localBallX = Dx * cos - Dy * sin;
+  const localBallY = Dx * sin + Dy * cos;
+
+  const closestX = Math.max(-halfRobot, Math.min(halfRobot, localBallX));
+  const closestY = Math.max(-halfRobot, Math.min(halfRobot, localBallY));
+
+  const distX = localBallX - closestX;
+  const distY = localBallY - closestY;
+  const distance = Math.sqrt(distX * distX + distY * distY)
+
+if (distance < ballRadius) {
+  let pushLocalX = 0;
+  let pushLocalY = 0;
+
+  if (distance === 0) {
+    const distanceToLeft = localBallX + halfRobot;
+    const distanceToRight = halfRobot - localBallX;
+    const distanceToTop = localBallY + halfRobot;
+    const distanceToBottom = halfRobot - localBallY;
+
+    const shortestDistance = Math.min(
+      distanceToLeft,
+      distanceToRight,
+      distanceToTop,
+      distanceToBottom,
+    );
+
+    if (shortestDistance === distanceToLeft) {
+      pushLocalX = -(distanceToLeft + ballRadius);
+    } else if (shortestDistance === distanceToRight) {
+      pushLocalX = distanceToRight + ballRadius;
+    } else if (shortestDistance === distanceToTop) {
+      pushLocalY = -(distanceToTop + ballRadius);
+    } else {
+      pushLocalY = distanceToBottom + ballRadius;
+    }
+  } else {
+    const overlap = ballRadius - distance;
+
+    pushLocalX = (distX / distance) * overlap;
+    pushLocalY = (distY / distance) * overlap;
+  }
+
+    const revCos = Math.cos(robotHeading);
+    const revSin = Math.sin(robotHeading);
+
+    const pushGlobalX = pushLocalX * revCos - pushLocalY * revSin;
+    const pushGlobalY = pushLocalX * revSin + pushLocalY * revCos;
+
+    return {
+      collided: true,
+      x: ballX + pushGlobalX,
+      y: ballY + pushGlobalY
+    }
+  }
+
+  return {
+    collided: false,
+    x: ballX,
+    y: ballY
+  }
+}
+
+export function ballWallCollision(
+  ballX: number,
+  ballY: number,
+  ballRadius: number,
+  centerX: number,
+  centerY: number,
+):  {collided: boolean, x: number, y: number} {
+  const FIELD_SIZE = 144
+  const fieldPixels = FIELD_SIZE * 6;
+  const fieldHalf = fieldPixels / 2;
+
+  const minX = centerX - fieldHalf + ballRadius;
+  const maxX = centerX + fieldHalf - ballRadius;
+  const minY = centerY - fieldHalf + ballRadius;
+  const maxY = centerY + fieldHalf - ballRadius;
+
+  const correctedX = Math.max(minX, Math.min(maxX, ballX));
+  const correctedY = Math.max(minY, Math.min(maxY, ballY));
+
+  return {
+    collided: ballX != correctedX || correctedY != ballY,
+    x: correctedX,
+    y: correctedY
+  }
+}
