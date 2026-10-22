@@ -16,12 +16,13 @@ export class gamePiece extends GameObject {
     initPhysics(physicsWorld: World): void {
         let rigidBodyDesc = RAPIER.RigidBodyDesc.dynamic()
             .setTranslation(this.transform.x, this.transform.y)
-            .setLinearDamping(1.5)
+            .setLinearDamping(2.5)
+            .setCcdEnabled(true)
         
         this.body = physicsWorld.createRigidBody(rigidBodyDesc)
 
         let collider = RAPIER.ColliderDesc.ball(this.gP.radius)
-            .setRestitution(0.7)
+            .setRestitution(0.4)
         
         physicsWorld.createCollider(collider, this.body)
     }

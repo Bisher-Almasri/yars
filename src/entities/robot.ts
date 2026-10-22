@@ -51,7 +51,7 @@ export class Robot extends GameObject {
 
     this.body = physicsWorld.createRigidBody(rigidBodyDesc);
 
-    let colliderDesc = RAPIER.ColliderDesc.cuboid(this.robotSize/2, this.robotSize/2)
+    let colliderDesc = RAPIER.ColliderDesc.cuboid(this.robotSize/2+2, this.robotSize/2+2)
 
     physicsWorld.createCollider(colliderDesc, this.body)
   }

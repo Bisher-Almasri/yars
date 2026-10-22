@@ -10,7 +10,9 @@ export class Field extends GameObject {
         drawField(ctx, this.transform)
     }
     initPhysics(physicsWorld: World): void {
-        const RigidBodyDesc = RAPIER.RigidBodyDesc.fixed().setTranslation(this.transform.x, this.transform.y)
+        const RigidBodyDesc = RAPIER.RigidBodyDesc.fixed()
+        .setTranslation(this.transform.x, this.transform.y)
+            .setCcdEnabled(true)
 
         this.body = physicsWorld.createRigidBody(RigidBodyDesc)
 
