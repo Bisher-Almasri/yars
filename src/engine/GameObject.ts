@@ -7,6 +7,7 @@ export abstract class GameObject {
   readonly id: ObjectId;
   public transform: Transform;
   public body?: RAPIER.RigidBody;
+  public name: string = "unassigned";
 
   public active = true;
   constructor(transform: Transform) {
@@ -14,7 +15,7 @@ export abstract class GameObject {
     this.transform = transform;
   }
 
-  update(_dt: number): void {
+  update(_dt: number, _eventQueue: RAPIER.EventQueue, _physicsWorld: RAPIER.World): void {
     if (this.body) {
       let translation = this.body.translation();
       this.transform.x = translation.x

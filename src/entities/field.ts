@@ -6,6 +6,9 @@ import RAPIER from "@dimforge/rapier2d-compat";
 export class Field extends GameObject {
     private FIELD_PIXELS = 144 * 6;
     private fieldHalf = this.FIELD_PIXELS / 2;
+
+    name = "field"
+    
     render(ctx: CanvasRenderingContext2D): void {
         drawField(ctx, this.transform)
     }

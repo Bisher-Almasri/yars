@@ -1,6 +1,6 @@
 import { Transform } from "../engine/Transform";
 
-function drawRobot(ctx: CanvasRenderingContext2D, transform: Transform) {
+function drawRobot(ctx: CanvasRenderingContext2D, transform: Transform, color?: string) {
   const robotSize = 18 * 6;
   const wheelOffset = robotSize / 2 - 2;
   const wheelWidth = 3 * 6;
@@ -63,9 +63,8 @@ function drawRobot(ctx: CanvasRenderingContext2D, transform: Transform) {
   const globalTurretRotation = Math.atan2(target.y - turretGlobalY, target.x - turretGlobalX)
   const localTurretRotation = globalTurretRotation - transform.rotation + Math.PI / 2;
 
-  drawShooter(ctx, new Transform(turretLocalX, turretLocalY, localTurretRotation), 
-  "#FFE400"
-  )
+  if (color) drawShooter(ctx, new Transform(turretLocalX, turretLocalY, localTurretRotation), color) 
+   else drawShooter(ctx, new Transform(turretLocalX, turretLocalY, localTurretRotation))
 
   const intakeDepth = 14;
   const intakeInset = 6;

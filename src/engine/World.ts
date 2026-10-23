@@ -1,9 +1,10 @@
-import RAPIER from "@dimforge/rapier2d-compat";
+import RAPIER, { EventQueue } from "@dimforge/rapier2d-compat";
 import type { GameObject } from "./GameObject";
 
 export class World {
   private objects = new Map<string, GameObject>();
   public physicsWorld: RAPIER.World;
+  public eventQueue: RAPIER.EventQueue = new RAPIER.EventQueue(true);
 
   constructor() {
     const gravity = new RAPIER.Vector2(0, 0)
@@ -23,12 +24,12 @@ export class World {
     return this.objects.get(id) as T | undefined;
   }
 
-  update(dt: number) {
+  update(dt: number, eventQueue: EventQueue) {
     this.physicsWorld.timestep = dt;
-    this.physicsWorld.step()
+    this.physicsWorld.step(this.eventQueue)
     
     this.objects.forEach((gameObject) => {
-      if (gameObject.active) gameObject.update(dt);
+      if (gameObject.active) gameObject.update(dt, eventQueue, this.physicsWorld);
     });
   }
 

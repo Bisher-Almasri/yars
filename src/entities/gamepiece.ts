@@ -9,6 +9,9 @@ export class gamePiece extends GameObject {
         radius: 1.4*6,
         color: "#FFE400"
     };
+
+    name = "Game Piece"
+
     render(ctx: CanvasRenderingContext2D): void {
         drawGamePiece(ctx, this.transform.x, this.transform.y, this.gP)
     }
@@ -20,6 +23,7 @@ export class gamePiece extends GameObject {
             .setCcdEnabled(true)
         
         this.body = physicsWorld.createRigidBody(rigidBodyDesc)
+        this.body.userData = this
 
         let collider = RAPIER.ColliderDesc.ball(this.gP.radius)
             .setRestitution(0.4)

@@ -33,6 +33,7 @@ export class Game {
     this.world.add(
       new Robot(new Transform(this.centerX, this.centerY, 0)),
     );
+
   }
 
   start() {
@@ -72,8 +73,8 @@ export class Game {
       (object): object is Robot => object instanceof Robot,
     );
 
-    if (dt > 0) {
-        this.world.update(dt)
+    if (dt > 0 && this.world.eventQueue) {
+        this.world.update(dt, this.world.eventQueue)
     }
 
     if (robot) {
