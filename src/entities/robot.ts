@@ -2,7 +2,7 @@ import { World, type EventQueue } from "@dimforge/rapier2d-compat";
 import { GameObject } from "../engine/GameObject";
 import mecanumKinematics from "../physics/mecanum";
 import drawRobot from "../render/drawRobot";
-import type { GamePiece, WheelPowers } from "../types";
+import type { WheelPowers } from "../types";
 import { robotCentricDrive } from "../utils/mecanumDrive";
 import RAPIER from "@dimforge/rapier2d-compat";
 import { gamePiece } from "./gamepiece";
