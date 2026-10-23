@@ -61,8 +61,8 @@ function drawRobot(ctx: CanvasRenderingContext2D, transform: Transform, target: 
   const globalTurretRotation = Math.atan2(target.y - turretGlobalY, target.x - turretGlobalX)
   const localTurretRotation = globalTurretRotation - transform.rotation + Math.PI / 2;
 
-  if (color) drawShooter(ctx, new Transform(turretLocalX, turretLocalY, localTurretRotation), color) 
-   else drawShooter(ctx, new Transform(turretLocalX, turretLocalY, localTurretRotation))
+  if (color) drawShooter(ctx, new Transform(turretLocalX, turretLocalY, 0, localTurretRotation), color) 
+   else drawShooter(ctx, new Transform(turretLocalX, turretLocalY, 0, localTurretRotation))
 
   const intakeDepth = 14;
   const intakeInset = 6;

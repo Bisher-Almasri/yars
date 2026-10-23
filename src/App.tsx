@@ -16,19 +16,33 @@ function App() {
     const game = new Game(ctx, canvas);
     game.start();
 
+    canvas.tabIndex = 0;
+    canvas.focus();
+
+    const getGameKey = (event: KeyboardEvent) => {
+      if (event.code === "Space") return "space";
+      return event.key.toLowerCase();
+    };
+
     const handleKeyDown = (event: KeyboardEvent) => {
-      game.keyDown(event.key);
+      if (["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight", "Space"].includes(event.code)) {
+        event.preventDefault();
+      }
+      game.keyDown(getGameKey(event));
     };
 
     const handleKeyUp = (event: KeyboardEvent) => {
-      game.keyUp(event.key);
+      if (["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight", "Space"].includes(event.code)) {
+        event.preventDefault();
+      }
+      game.keyUp(getGameKey(event));
     };
 
     const handleBlur = () => {
       for (const key of [
         "w", "a", "s", "d", "q", "e",
         "arrowup", "arrowdown",
-        "arrowleft", "arrowright",
+        "arrowleft", "arrowright", "space"
       ]) {
         game.keyUp(key);
       }
@@ -55,6 +69,8 @@ function App() {
         width: "100vw",
         height: "100vh",
       }}
+      onClick={() => canvasRef.current?.focus()}
+      tabIndex={0}
     />
   );
 }

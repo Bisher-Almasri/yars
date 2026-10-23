@@ -97,6 +97,9 @@ export class Game {
 
     if (robot) {
         robot.drive(forward, strafe, turn);
+        if (pressed.has("space")) {
+          robot.shoot(this.world)
+        }
     }
 
     this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height)
