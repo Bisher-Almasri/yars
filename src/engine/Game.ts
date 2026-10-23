@@ -22,12 +22,30 @@ export class Game {
     this.centerX = canvas.width / 2;
     this.centerY = canvas.height / 2;
 
+
     this.world.add(
       new Field(new Transform(this.centerX, this.centerY, 0))
     )
 
     this.world.add(
-      new gamePiece(new Transform(this.centerX+250, this.centerY+250, 0))
+      new gamePiece(new Transform(this.centerX+250, this.centerY+250, 0)),
+    )
+    this.world.add(
+      new gamePiece(new Transform(this.centerX+190, this.centerY+250, 0)),
+    )
+    this.world.add(
+      new gamePiece(new Transform(this.centerX+130, this.centerY+250, 0)),
+    )
+    this.world.add(
+      new gamePiece(new Transform(this.centerX+70, this.centerY+250, 0)),
+    )
+
+    this.world.add(
+      new gamePiece(new Transform(this.centerX+10, this.centerY+250, 0)),
+    )
+
+    this.world.add(
+      new gamePiece(new Transform(this.centerX-50, this.centerY+250, 0)),
     )
 
     this.world.add(

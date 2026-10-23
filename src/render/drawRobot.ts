@@ -1,6 +1,6 @@
 import { Transform } from "../engine/Transform";
 
-function drawRobot(ctx: CanvasRenderingContext2D, transform: Transform, color?: string) {
+function drawRobot(ctx: CanvasRenderingContext2D, transform: Transform, target: Transform, color?: string) {
   const robotSize = 18 * 6;
   const wheelOffset = robotSize / 2 - 2;
   const wheelWidth = 3 * 6;
@@ -48,9 +48,7 @@ function drawRobot(ctx: CanvasRenderingContext2D, transform: Transform, color?: 
   );
 
 
-  //todo: get field pos scof thibng
-  const target = new Transform(50,50);
-  
+  //todo: get field pos scof thibng  
   const turretLocalX = 0;
   const turretLocalY = wheelHeight-56;
 

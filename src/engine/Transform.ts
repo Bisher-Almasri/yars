@@ -8,11 +8,4 @@ export class Transform {
     this.y = y;
     this.rotation = rotation;
   }
-
-  transform(moveX: number, moveY: number) {
-    (this.x += moveX), (this.y += moveY);
-  }
-  rotate(rot: any) {
-    this.rotate(rot);
-  }
 }
