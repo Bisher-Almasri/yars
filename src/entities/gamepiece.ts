@@ -12,8 +12,32 @@ export class gamePiece extends GameObject {
 
     name = "Game Piece"
 
+    private verticalVelocity = 0;
+    private readonly gravity = 980;
+    private airborne = false;
+
+    launch(verticalVelocity: number) {
+        this.transform.z = 1;
+        this.verticalVelocity = verticalVelocity
+        this.airborne = true;
+    }
+
+    update(dt: number, eventQueue: RAPIER.EventQueue, physicsWorld: RAPIER.World): void {
+        super.update(dt, eventQueue, physicsWorld)
+
+        if (!this.airborne) return;
+
+        this.verticalVelocity -= this.gravity * dt;
+        this.transform.z += this.verticalVelocity * dt;
+
+        if (this.transform.z <= 0) {
+            this.transform.z = 0;
+            this.verticalVelocity = 0
+            this.airborne = false
+        }
+    }
     render(ctx: CanvasRenderingContext2D): void {
-        drawGamePiece(ctx, this.transform.x, this.transform.y, this.gP)
+        drawGamePiece(ctx, this.transform, this.gP)
     }
 
     initPhysics(physicsWorld: World): void {
