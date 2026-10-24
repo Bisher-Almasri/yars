@@ -50,7 +50,7 @@ function drawRobot(ctx: CanvasRenderingContext2D, transform: Transform, target: 
 
   //todo: get field pos scof thibng  
   const turretLocalX = 0;
-  const turretLocalY = wheelHeight-56;
+  const turretLocalY = -wheelHeight+56;
 
   const cos = Math.cos(transform.rotation);
   const sin = Math.sin(transform.rotation);
@@ -66,9 +66,9 @@ function drawRobot(ctx: CanvasRenderingContext2D, transform: Transform, target: 
 
   const intakeDepth = 14;
   const intakeInset = 6;
-  const intakeY =( robotSize / 2 - intakeInset - intakeDepth / 2) + 6;
+  const intakeY = ( robotSize / 2 + intakeInset + intakeDepth / 2) - 6;
 
-  drawIntake(ctx, new Transform(0, intakeY))
+  drawIntake(ctx, new Transform(0, -intakeY))
 
   ctx.restore();
 }

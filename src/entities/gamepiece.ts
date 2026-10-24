@@ -1,25 +1,39 @@
 import { World } from "@dimforge/rapier2d-compat";
 import { GameObject } from "../engine/GameObject";
-import { drawGamePiece } from "../render/drawGamePiece";
-import type { GamePiece } from "../types";
+import { drawgamePiece } from "../render/drawGamePiece";
+import type { gamePiece, gamePieceType } from "../types";
 import RAPIER from "@dimforge/rapier2d-compat";
+import type { Transform } from "../engine/Transform";
 
-export class gamePiece extends GameObject {
-    public gP: GamePiece = {
+export class GamePiece extends GameObject {
+    public gP: gamePiece = {
         radius: 1.4*6,
         color: "#FFE400"
     };
 
     name = "Game Piece"
 
+    public type: gamePieceType = "Pollen"
+
     private verticalVelocity = 0;
-    private readonly gravity = 980;
-    private airborne = false;
+    private readonly gravity = 900;
+    public airborne = false;
+
+    private collider?: RAPIER.Collider;
+
+    constructor(transform: Transform, gP?: gamePiece, type?: gamePieceType) {
+        super(transform)
+        if (gP) this.gP = gP;
+        if (type) this.type = type;
+    }
 
     launch(verticalVelocity: number) {
         this.transform.z = 1;
         this.verticalVelocity = verticalVelocity
         this.airborne = true;
+
+        this.collider?.setSensor(true);
+        this.body?.setLinearDamping(0.13);
     }
 
     update(dt: number, eventQueue: RAPIER.EventQueue, physicsWorld: RAPIER.World): void {
@@ -34,10 +48,13 @@ export class gamePiece extends GameObject {
             this.transform.z = 0;
             this.verticalVelocity = 0
             this.airborne = false
+
+            this.collider?.setSensor(false);
+            this.body?.setLinearDamping(1.5);
         }
     }
     render(ctx: CanvasRenderingContext2D): void {
-        drawGamePiece(ctx, this.transform, this.gP)
+        drawgamePiece(ctx, this.transform, this.gP)
     }
 
     initPhysics(physicsWorld: World): void {
@@ -52,6 +69,6 @@ export class gamePiece extends GameObject {
         let collider = RAPIER.ColliderDesc.ball(this.gP.radius)
             .setRestitution(0.4)
         
-        physicsWorld.createCollider(collider, this.body)
+        this.collider = physicsWorld.createCollider(collider, this.body)
     }
 }

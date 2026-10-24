@@ -25,7 +25,12 @@ export type Collider =
     };
 
 
-export type GamePiece = {
+export type gamePiece = {
     radius: number,
     color: string
 }
+
+export type gamePieceType = 
+  | "Pollen"
+  | "Red Nectar"
+  | "Blue Nectar"

@@ -5,7 +5,7 @@ import drawRobot from "../render/drawRobot";
 import type { WheelPowers } from "../types";
 import { robotCentricDrive } from "../utils/mecanumDrive";
 import RAPIER from "@dimforge/rapier2d-compat";
-import { gamePiece } from "./gamepiece";
+import { GamePiece } from "./gamepiece";
 import { Transform } from "../engine/Transform";
 import type { World } from "../engine/World";
 
@@ -19,7 +19,7 @@ export class Robot extends GameObject {
 
   private robotSize = 18 * 6;
 
-  public robotStorage: gamePiece[] = [];
+  public robotStorage: GamePiece[] = [];
 
   name = "Robot"
 
@@ -40,7 +40,7 @@ export class Robot extends GameObject {
     const objShoot = this.robotStorage.shift()!;
     objShoot.active = true
 
-    const turretLocalY = 6 * 6 - 56;
+    const turretLocalY = -6 * 6 + 56;
     const cos = Math.cos(this.transform.rotation);
     const sin = Math.sin(this.transform.rotation);
     const turretX = this.transform.x - turretLocalY * sin;
@@ -56,6 +56,11 @@ export class Robot extends GameObject {
     const directionY = dy / distance;
     const muzzleDistance = 28;
 
+    const apexHeight = 200;
+    const gravity = 900;
+
+    const flightTime = Math.sqrt((8*apexHeight)/gravity);
+
     objShoot.transform.setTransform(
       new Transform(
         turretX + directionX * muzzleDistance,
@@ -67,12 +72,14 @@ export class Robot extends GameObject {
 
     world.add(objShoot);
 
-    const speed = 6000;
+    const speed = distance / flightTime;
 
     const vx = directionX * speed;
     const vy = directionY * speed;
 
     objShoot.body!.setLinvel({ x: vx, y: vy }, true);
+    objShoot.launch((4 * apexHeight) / flightTime)
+    
     this.shootCooldown = this.shootInterval
   }
 
@@ -106,9 +113,9 @@ export class Robot extends GameObject {
 
       if (started && otherHandle != undefined) {
         const otherCollider = physicsWorld.getCollider(otherHandle)
-        const otherObject = otherCollider.parent()!.userData as gamePiece 
+        const otherObject = otherCollider.parent()!.userData as GamePiece 
 
-        if (otherObject.name == "Game Piece" && this.robotStorage.length < 4) {
+        if (otherObject.name == "Game Piece" && this.robotStorage.length < 4 && !otherObject.airborne) {
           if (this.robotStorage.includes(otherObject)) return;
           if (otherObject.body) {
             physicsWorld.removeRigidBody(otherObject.body);
@@ -137,10 +144,10 @@ export class Robot extends GameObject {
     this.body = physicsWorld.createRigidBody(rigidBodyDesc);
     this.body.userData = this
 
-    const intakeY = this.robotSize / 2 - 6 - 14 / 2 + 6;
+    const intakeY = this.robotSize / 2 + 6 + 14 / 2 - 6;
 
-    let intakeColliderDesc = RAPIER.ColliderDesc.cuboid(45, 8)
-      .setTranslation(0, intakeY)
+    let intakeColliderDesc = RAPIER.ColliderDesc.cuboid(45, 7.5)
+      .setTranslation(0, -intakeY)
       .setSensor(true)
       .setActiveEvents(RAPIER.ActiveEvents.COLLISION_EVENTS)
 

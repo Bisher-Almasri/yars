@@ -17,6 +17,12 @@ export class World {
     return gameObject;
   }
 
+  addGroup<T extends GameObject>(...gameObjects: T[]) {
+    gameObjects
+      .sort((a,b) => a.transform.z - b.transform.z)
+      .forEach((gameObject) => this.add(gameObject))
+  }
+
   remove(id: string) {
     this.objects.delete(id);
   }
@@ -34,9 +40,12 @@ export class World {
   }
 
   render(ctx: CanvasRenderingContext2D) {
-    this.objects.forEach((gameObject) => {
-      if (gameObject.active) gameObject.render(ctx);
-    });
+    [...this.objects.values()]
+      .filter((gameObject) => gameObject.active)
+      .sort((a, b) => a.transform.z - b.transform.z)
+      .forEach((gameObject) => {
+        gameObject.render(ctx)
+      });
   }
 
   getAll(): GameObject[] {
