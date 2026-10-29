@@ -7,8 +7,8 @@ export class World {
   public eventQueue: RAPIER.EventQueue = new RAPIER.EventQueue(true);
 
   constructor() {
-    const gravity = new RAPIER.Vector2(0, 0)
-    this.physicsWorld = new RAPIER.World(gravity)
+    const gravity = new RAPIER.Vector2(0, 0);
+    this.physicsWorld = new RAPIER.World(gravity);
   }
 
   add<T extends GameObject>(gameObject: T): T {
@@ -19,8 +19,8 @@ export class World {
 
   addGroup<T extends GameObject>(...gameObjects: T[]) {
     gameObjects
-      .sort((a,b) => a.transform.z - b.transform.z)
-      .forEach((gameObject) => this.add(gameObject))
+      .sort((a, b) => a.transform.z - b.transform.z)
+      .forEach((gameObject) => this.add(gameObject));
   }
 
   remove(id: string) {
@@ -32,10 +32,16 @@ export class World {
 
   update(dt: number, eventQueue: EventQueue) {
     this.physicsWorld.timestep = dt;
-    this.physicsWorld.step(this.eventQueue)
-    
+    this.physicsWorld.step(this.eventQueue);
+
     this.objects.forEach((gameObject) => {
-      if (gameObject.active) gameObject.update(dt, eventQueue, this.physicsWorld);
+      if (gameObject.active)
+        gameObject.update(dt, eventQueue, this.physicsWorld);
+
+      if (gameObject.children)
+        gameObject.children.forEach((child) => {
+          child.update(dt, eventQueue, this.physicsWorld);
+        });
     });
   }
 
@@ -44,10 +50,16 @@ export class World {
       .filter((gameObject) => gameObject.active)
       .sort((a, b) => a.transform.z - b.transform.z)
       .forEach((gameObject) => {
-        gameObject.render(ctx)
+        gameObject.renderIfNeeded(ctx);
+
+        if (gameObject.children) {
+          [...gameObject.children.values()]
+            .filter((child) => child.active)
+            .sort((a, b) => a.transform.z - b.transform.z)
+            .forEach((child) => child.renderIfNeeded(ctx));
+        }
       });
   }
-
   getAll(): GameObject[] {
     return [...this.objects.values()];
   }

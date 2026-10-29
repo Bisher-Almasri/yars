@@ -25,14 +25,22 @@ function App() {
     };
 
     const handleKeyDown = (event: KeyboardEvent) => {
-      if (["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight", "Space"].includes(event.code)) {
+      if (
+        ["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight", "Space"].includes(
+          event.code,
+        )
+      ) {
         event.preventDefault();
       }
       game.keyDown(getGameKey(event));
     };
 
     const handleKeyUp = (event: KeyboardEvent) => {
-      if (["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight", "Space"].includes(event.code)) {
+      if (
+        ["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight", "Space"].includes(
+          event.code,
+        )
+      ) {
         event.preventDefault();
       }
       game.keyUp(getGameKey(event));
@@ -40,9 +48,17 @@ function App() {
 
     const handleBlur = () => {
       for (const key of [
-        "w", "a", "s", "d", "q", "e",
-        "arrowup", "arrowdown",
-        "arrowleft", "arrowright", "space"
+        "w",
+        "a",
+        "s",
+        "d",
+        "q",
+        "e",
+        "arrowup",
+        "arrowdown",
+        "arrowleft",
+        "arrowright",
+        "space",
       ]) {
         game.keyUp(key);
       }

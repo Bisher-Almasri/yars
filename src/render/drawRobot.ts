@@ -1,6 +1,11 @@
 import { Transform } from "../engine/Transform";
 
-function drawRobot(ctx: CanvasRenderingContext2D, transform: Transform, target: Transform, color?: string) {
+function drawRobot(
+  ctx: CanvasRenderingContext2D,
+  transform: Transform,
+  target: Transform,
+  color?: string,
+) {
   const robotSize = 18 * 6;
   const wheelOffset = robotSize / 2 - 2;
   const wheelWidth = 3 * 6;
@@ -11,6 +16,7 @@ function drawRobot(ctx: CanvasRenderingContext2D, transform: Transform, target: 
   ctx.rotate(transform.rotation);
 
   ctx.strokeStyle = "#9ca6b1";
+  ctx.fillStyle = "#25282e";
   ctx.lineWidth = 4;
 
   const topLeftCorner = -robotSize / 2;
@@ -18,12 +24,10 @@ function drawRobot(ctx: CanvasRenderingContext2D, transform: Transform, target: 
   const topRightCorner = robotSize;
   const bottomRightCorner = robotSize;
 
-  ctx.strokeRect(
-    topLeftCorner,
-    bottomLeftCorner,
-    topRightCorner,
-    bottomRightCorner,
-  );
+  ctx.beginPath();
+  ctx.rect(topLeftCorner, bottomLeftCorner, topRightCorner, bottomRightCorner);
+  ctx.fill();
+  ctx.stroke();
 
   ctx.strokeStyle = "#62717c";
 
@@ -47,28 +51,40 @@ function drawRobot(ctx: CanvasRenderingContext2D, transform: Transform, target: 
     wheelHeight,
   );
 
-
-  //todo: get field pos scof thibng  
+  //todo: get field pos scof thibng
   const turretLocalX = 0;
-  const turretLocalY = -wheelHeight+56;
+  const turretLocalY = -wheelHeight + 56;
 
   const cos = Math.cos(transform.rotation);
   const sin = Math.sin(transform.rotation);
 
-  const turretGlobalX = transform.x + (turretLocalX * cos  - turretLocalY * sin);
-  const turretGlobalY = transform.y + (turretLocalX * sin  + turretLocalY * cos);
+  const turretGlobalX = transform.x + (turretLocalX * cos - turretLocalY * sin);
+  const turretGlobalY = transform.y + (turretLocalX * sin + turretLocalY * cos);
 
-  const globalTurretRotation = Math.atan2(target.y - turretGlobalY, target.x - turretGlobalX)
-  const localTurretRotation = globalTurretRotation - transform.rotation + Math.PI / 2;
+  const globalTurretRotation = Math.atan2(
+    target.y - turretGlobalY,
+    target.x - turretGlobalX,
+  );
+  const localTurretRotation =
+    globalTurretRotation - transform.rotation + Math.PI / 2;
 
-  if (color) drawShooter(ctx, new Transform(turretLocalX, turretLocalY, 0, localTurretRotation), color) 
-   else drawShooter(ctx, new Transform(turretLocalX, turretLocalY, 0, localTurretRotation))
+  if (color)
+    drawShooter(
+      ctx,
+      new Transform(turretLocalX, turretLocalY, 0, localTurretRotation),
+      color,
+    );
+  else
+    drawShooter(
+      ctx,
+      new Transform(turretLocalX, turretLocalY, 0, localTurretRotation),
+    );
 
   const intakeDepth = 14;
   const intakeInset = 6;
-  const intakeY = ( robotSize / 2 + intakeInset + intakeDepth / 2) - 6;
+  const intakeY = robotSize / 2 + intakeInset + intakeDepth / 2 - 6;
 
-  drawIntake(ctx, new Transform(0, -intakeY))
+  drawIntake(ctx, new Transform(0, -intakeY));
 
   ctx.restore();
 }
@@ -86,10 +102,10 @@ function drawIntake(ctx: CanvasRenderingContext2D, pos: Transform) {
   for (const wheelX of [-15, -5, 5]) {
     ctx.beginPath();
     ctx.strokeStyle = "#d28b32";
-    ctx.fillStyle = "#c4ccd4"
+    ctx.fillStyle = "#c4ccd4";
     ctx.roundRect(wheelX, 0, 10, 15, centerWheelRadius);
-    ctx.fill()
-    ctx.stroke()
+    ctx.fill();
+    ctx.stroke();
   }
 
   for (const wheelX of [-45, -35, -25, 15, 25, 35]) {
@@ -99,15 +115,17 @@ function drawIntake(ctx: CanvasRenderingContext2D, pos: Transform) {
 
     ctx.beginPath();
     ctx.roundRect(wheelX, 0, 10, 15, centerWheelRadius);
-    ctx.fill()
-    ctx.stroke()
-
+    ctx.fill();
+    ctx.stroke();
   }
-  ctx.restore()
-
+  ctx.restore();
 }
 
-function drawShooter(ctx: CanvasRenderingContext2D, pos: Transform, color?: string) {
+function drawShooter(
+  ctx: CanvasRenderingContext2D,
+  pos: Transform,
+  color?: string,
+) {
   const barrelWidth = 15;
   const barrelHeight = 28;
   const turretRadius = 22;
@@ -120,9 +138,9 @@ function drawShooter(ctx: CanvasRenderingContext2D, pos: Transform, color?: stri
   ctx.strokeStyle = color || "#7b8392";
   ctx.fillStyle = "#3e4758";
   ctx.lineWidth = 12;
-  
+
   ctx.beginPath();
-  ctx.arc(0, 0, turretRadius, 0, Math.PI * 2); 
+  ctx.arc(0, 0, turretRadius, 0, Math.PI * 2);
   ctx.stroke();
   ctx.fill();
 
@@ -132,6 +150,5 @@ function drawShooter(ctx: CanvasRenderingContext2D, pos: Transform, color?: stri
 
   ctx.restore();
 }
-
 
 export default drawRobot;

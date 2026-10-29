@@ -24,13 +24,9 @@ export type Collider =
       height: number;
     };
 
-
 export type gamePiece = {
-    radius: number,
-    color: string
-}
+  radius: number;
+  color: string;
+};
 
-export type gamePieceType = 
-  | "Pollen"
-  | "Red Nectar"
-  | "Blue Nectar"
+export type gamePieceType = "Pollen" | "Red Nectar" | "Blue Nectar";

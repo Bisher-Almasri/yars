@@ -12,9 +12,9 @@ export class Transform {
   }
 
   setTransform(transform: Transform) {
-    this .x = transform.x
-    this .y = transform.y
-    this .z = transform.z
-    this .rotation = transform.rotation
+    this.x = transform.x;
+    this.y = transform.y;
+    this.z = transform.z;
+    this.rotation = transform.rotation;
   }
 }

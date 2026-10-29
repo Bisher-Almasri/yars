@@ -4,7 +4,7 @@ import App from "./App.tsx";
 import RAPIER from "@dimforge/rapier2d-compat";
 
 async function start() {
-  await RAPIER.init()
+  await RAPIER.init();
   createRoot(document.getElementById("root")!).render(
     <StrictMode>
       <App />

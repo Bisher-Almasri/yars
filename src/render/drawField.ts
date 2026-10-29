@@ -1,9 +1,6 @@
 import type { Transform } from "../engine/Transform";
 
-function drawField(
-  ctx: CanvasRenderingContext2D,
-  center: Transform,
-) {
+function drawField(ctx: CanvasRenderingContext2D, center: Transform) {
   // field size is 144x144 inches (6x6 tiles)
   const FIELD_SIZE = 144;
   const SCALE = 6;
