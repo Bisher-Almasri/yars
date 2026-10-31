@@ -31,7 +31,7 @@ export class Game {
 
     this.world.add(
       new Robot(
-        new Transform(this.centerX - 250, this.centerY, 0),
+        new Transform(this.centerX, this.centerY - 360, 1),
         this.world.physicsWorld,
       ),
     );
@@ -63,27 +63,51 @@ export class Game {
 
     const pressed = this.keys;
 
-    const forward =
+    let forward =
       Number(pressed.has("w") || pressed.has("arrowup")) -
       Number(pressed.has("s") || pressed.has("arrowdown"));
 
-    const strafe =
+    let strafe =
       Number(pressed.has("d") || pressed.has("arrowright")) -
       Number(pressed.has("a") || pressed.has("arrowleft"));
 
-    const turn = Number(pressed.has("e")) - Number(pressed.has("q"));
+    let turn = Number(pressed.has("e")) - Number(pressed.has("q"));
+
+    let isShooting = pressed.has("space");
+
+    const gamepads = navigator.getGamepads ? navigator.getGamepads() : [];
+    let gamepad: Gamepad | null = null;
+
+    for (let i = 0; i < gamepads.length; i++) {
+      const gP = gamepads[i];
+      if (gP !== null) {
+        gamepad = gP;
+        break;
+      }
+    }
+
+    // console.log(gamepads);
+
+    if (gamepad) {
+      const inputs = this.handleGamepad(gamepad);
+
+      if (inputs.forward != 0) forward = Math.min(forward + inputs.forward, 1);
+      if (inputs.strafe != 0) strafe = Math.min(strafe + inputs.strafe, 1);
+      if (inputs.turn != 0) turn = Math.min(turn + inputs.turn, 1);
+      if (inputs.shoot && !isShooting) isShooting = true;
+    }
 
     const robot = [...this.world.getAll()].find(
       (object): object is Robot => object instanceof Robot,
     );
 
-    if (dt > 0 && this.world.eventQueue) {
+    if (dt > 0) {
       this.world.update(dt, this.world.eventQueue);
     }
 
     if (robot) {
       robot.drive(forward, strafe, turn);
-      if (pressed.has("space")) {
+      if (isShooting) {
         robot.shoot(this.world);
       }
     }
@@ -96,4 +120,33 @@ export class Game {
 
     this.animationId = requestAnimationFrame(this.loop);
   };
+
+  private handleGamepad(gamePad: Gamepad): {
+    forward: number;
+    strafe: number;
+    turn: number;
+    shoot: boolean;
+  } {
+    const DEADZONE = 0;
+
+    let strafeAxis = gamePad.axes[0] || 0;
+    let forwardAxis = gamePad.axes[1] || 0;
+    let turnAxis = gamePad.axes[2] || 0;
+
+    strafeAxis = Math.abs(strafeAxis) > DEADZONE ? strafeAxis : 0;
+    forwardAxis = Math.abs(forwardAxis) > DEADZONE ? forwardAxis : 0;
+    turnAxis = Math.abs(turnAxis) > DEADZONE ? turnAxis : 0;
+
+    const rightTrigger = gamePad.buttons[7];
+    const shoot = rightTrigger
+      ? rightTrigger.value > 0.5 || rightTrigger.pressed
+      : false;
+
+    return {
+      forward: -forwardAxis,
+      strafe: strafeAxis,
+      turn: turnAxis,
+      shoot: shoot,
+    };
+  }
 }

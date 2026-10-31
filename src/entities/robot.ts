@@ -3,11 +3,17 @@ import { GameObject } from "../engine/GameObject";
 import mecanumKinematics from "../physics/mecanum";
 import drawRobot from "../render/drawRobot";
 import type { WheelPowers } from "../types";
-import { robotCentricDrive } from "../utils/mecanumDrive";
+import { fieldCentricDrive } from "../utils/mecanumDrive";
 import RAPIER from "@dimforge/rapier2d-compat";
 import { GamePiece } from "./gamepiece";
 import { Transform } from "../engine/Transform";
 import type { World } from "../engine/World";
+import { getCenterTileWorld } from "../utils/helpers";
+import {
+  COLLISION_GROUP,
+  ROBOT_COLLISION_GROUPS,
+  collisionGroups,
+} from "../physics/collisionGroups";
 
 export class Robot extends GameObject {
   wheelPowers: WheelPowers = {
@@ -30,7 +36,13 @@ export class Robot extends GameObject {
   public target!: Transform;
 
   drive(forward: number, strafe: number, rotate: number) {
-    this.wheelPowers = robotCentricDrive(forward, strafe, rotate);
+    // this.wheelPowers = robotCentricDrive(forward, strafe, rotate);
+    this.wheelPowers = fieldCentricDrive(
+      forward,
+      strafe,
+      rotate,
+      this.body?.rotation ? this.body.rotation() : 0,
+    );
   }
 
   shoot(world: World) {
@@ -38,6 +50,7 @@ export class Robot extends GameObject {
     if (this.robotStorage.length <= 0) return;
 
     const objShoot = this.robotStorage.shift()!;
+    this.checkForIntake(this.physicsWorld);
     objShoot.active = true;
 
     const turretLocalY = -6 * 6 + 56;
@@ -83,6 +96,34 @@ export class Robot extends GameObject {
     this.shootCooldown = this.shootInterval;
   }
 
+  private checkForIntake(physicsWorld: RAPIER.World) {
+    if (this.robotStorage.length >= 4) return;
+
+    physicsWorld.colliders.forEach((collider: RAPIER.Collider) => {
+      if (collider.handle == this.intakeCollider.handle) return;
+
+      if (!physicsWorld.intersectionPair(collider, this.intakeCollider)) return;
+
+      const otherObject = collider.parent()!.userData as GamePiece | null;
+
+      if (
+        otherObject?.name == "Game Piece" &&
+        this.robotStorage.length < 4 &&
+        !otherObject.airborne &&
+        !otherObject.insideHive
+      ) {
+        if (this.robotStorage.includes(otherObject)) return;
+        if (otherObject.body) {
+          physicsWorld.removeRigidBody(otherObject.body);
+          otherObject.body = undefined;
+        }
+        otherObject.destroy();
+        this.robotStorage.push(otherObject);
+        console.log(this.robotStorage.length);
+      }
+    });
+  }
+
   update(dt: number, eventQueue: EventQueue, physicsWorld: RAPIER.World): void {
     if (!this.body) return;
 
@@ -126,7 +167,8 @@ export class Robot extends GameObject {
           if (
             otherObject.name == "Game Piece" &&
             this.robotStorage.length < 4 &&
-            !otherObject.airborne
+            !otherObject.airborne &&
+            !otherObject.insideHive
           ) {
             if (this.robotStorage.includes(otherObject)) return;
             if (otherObject.body) {
@@ -142,8 +184,26 @@ export class Robot extends GameObject {
     );
   }
 
+  updateTarget(fieldCenter: Transform) {
+    const a = getCenterTileWorld(2, 2, fieldCenter);
+    const b = getCenterTileWorld(2, 3, fieldCenter);
+
+    const distanceA = Math.hypot(
+      a.x - this.transform.x,
+      a.y - this.transform.y,
+    );
+    const distanceB = Math.hypot(
+      b.x - this.transform.x,
+      b.y - this.transform.y,
+    );
+
+    this.target = distanceA <= distanceB ? a : b;
+  }
+
   render(ctx: CanvasRenderingContext2D): void {
-    this.target = new Transform(ctx.canvas.width / 2, ctx.canvas.height / 2);
+    this.updateTarget(
+      new Transform(ctx.canvas.width / 2, ctx.canvas.height / 2),
+    );
     drawRobot(ctx, this.transform, this.target, this.robotStorage[0]?.gP.color);
   }
 
@@ -156,23 +216,51 @@ export class Robot extends GameObject {
     this.body = physicsWorld.createRigidBody(rigidBodyDesc);
     this.body.userData = this;
 
-    const intakeY = this.robotSize / 2 + 6 + 14 / 2 - 6;
+    const intakeY = this.robotSize / 2 + 6 + 14 / 2 - 13;
 
-    let intakeColliderDesc = RAPIER.ColliderDesc.cuboid(45, 7.5)
+    let intakeColliderDesc = RAPIER.ColliderDesc.cuboid(45, 7)
       .setTranslation(0, -intakeY)
       .setSensor(true)
+      .setCollisionGroups(
+        collisionGroups(COLLISION_GROUP.robot, ROBOT_COLLISION_GROUPS),
+      )
       .setActiveEvents(RAPIER.ActiveEvents.COLLISION_EVENTS);
 
     let colliderDesc = RAPIER.ColliderDesc.cuboid(
       this.robotSize / 2 + 2,
       this.robotSize / 2 + 2,
-    );
+    )
+      .setFriction(0)
+      .setCollisionGroups(
+        collisionGroups(COLLISION_GROUP.robot, ROBOT_COLLISION_GROUPS),
+      );
 
-    physicsWorld.createCollider(colliderDesc, this.body);
+    physicsWorld.createCollider(colliderDesc, this.body).setFriction(0);
 
     this.intakeCollider = physicsWorld.createCollider(
       intakeColliderDesc,
       this.body,
     );
+
+    physicsWorld.createCollider(
+      RAPIER.ColliderDesc.cuboid(5, 7)
+        .setTranslation(45 + 5, -intakeY)
+        .setCollisionGroups(
+          collisionGroups(COLLISION_GROUP.robot, ROBOT_COLLISION_GROUPS),
+        ),
+      this.body,
+    );
+
+    physicsWorld.createCollider(
+      RAPIER.ColliderDesc.cuboid(5, 7)
+        .setTranslation(-45 - 5, -intakeY)
+        .setCollisionGroups(
+          collisionGroups(COLLISION_GROUP.robot, ROBOT_COLLISION_GROUPS),
+        ),
+      this.body,
+    );
+
+    for (let i = 0; i < 4; i++)
+      this.robotStorage.push(new GamePiece(new Transform(), physicsWorld));
   }
 }

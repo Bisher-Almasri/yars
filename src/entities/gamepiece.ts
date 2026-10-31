@@ -4,6 +4,12 @@ import { drawGamePiece } from "../render/drawGamePiece";
 import type { gamePiece, gamePieceType } from "../types";
 import RAPIER from "@dimforge/rapier2d-compat";
 import type { Transform } from "../engine/Transform";
+import {
+  BALL_COLLISION_GROUPS,
+  COLLISION_GROUP,
+  collisionGroups,
+  isHiveInterior,
+} from "../physics/collisionGroups";
 
 export class GamePiece extends GameObject {
   public gP: gamePiece = {
@@ -18,6 +24,7 @@ export class GamePiece extends GameObject {
   private verticalVelocity = 0;
   private readonly gravity = 900;
   public airborne = false;
+  public insideHive = false;
 
   private collider?: RAPIER.Collider;
 
@@ -46,7 +53,17 @@ export class GamePiece extends GameObject {
     eventQueue: RAPIER.EventQueue,
     physicsWorld: RAPIER.World,
   ): void {
+    if (this.transform.z > 0) this.airborne = true;
     super.update(dt, eventQueue, physicsWorld);
+    this.insideHive = false;
+    physicsWorld.colliders.forEach((collider) => {
+      if (
+        isHiveInterior(collider.handle) &&
+        physicsWorld.intersectionPair(collider, this.collider!)
+      ) {
+        this.insideHive = true;
+      }
+    });
 
     if (!this.airborne) return;
 
@@ -75,7 +92,11 @@ export class GamePiece extends GameObject {
     this.body = physicsWorld.createRigidBody(rigidBodyDesc);
     this.body.userData = this;
 
-    let collider = RAPIER.ColliderDesc.ball(this.gP.radius).setRestitution(0.4);
+    let collider = RAPIER.ColliderDesc.ball(this.gP.radius)
+      .setRestitution(0.4)
+      .setCollisionGroups(
+        collisionGroups(COLLISION_GROUP.ball, BALL_COLLISION_GROUPS),
+      );
 
     this.collider = physicsWorld.createCollider(collider, this.body);
   }

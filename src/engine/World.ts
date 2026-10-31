@@ -59,6 +59,36 @@ export class World {
             .forEach((child) => child.renderIfNeeded(ctx));
         }
       });
+
+    this.renderDebug(ctx)
+  }
+
+  private renderDebug(ctx: CanvasRenderingContext2D) {
+    const buffers = this.physicsWorld.debugRender();
+    const vtx = buffers.vertices;
+    const cls = buffers.colors;
+
+    ctx.save();
+
+    for (let i = 0; i < vtx.length / 4; i++) {
+      const x1 = vtx[i * 4];
+      const y1 = vtx[i * 4 + 1];
+      const x2 = vtx[i * 4 + 2];
+      const y2 = vtx[i * 4 + 3];
+
+      const r = Math.floor(cls[i * 8] * 255);
+      const g = Math.floor(cls[i * 8 + 1] * 255);
+      const b = Math.floor(cls[i * 8 + 2] * 255);
+      const a = cls[i * 8 + 3];
+
+      ctx.beginPath();
+      ctx.strokeStyle = `rgba(${r}, ${g}, ${b}, ${a})`;
+      ctx.lineWidth = 1;
+      ctx.moveTo(x1, y1);
+      ctx.lineTo(x2, y2);
+      ctx.stroke();
+    }
+    ctx.restore();
   }
   getAll(): GameObject[] {
     return [...this.objects.values()];
